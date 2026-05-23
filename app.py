@@ -60,7 +60,7 @@ if not os.path.exists(WATCHLIST_FILE):
     )
 
 # ======================================================
-# 사이드바
+# 사이드바 메뉴
 # ======================================================
 
 st.sidebar.title("📌 메뉴")
@@ -78,7 +78,7 @@ page = st.sidebar.radio(
 )
 
 # ======================================================
-# 매매일지 작성
+# 1. 매매일지 작성
 # ======================================================
 
 if page == "매매일지 작성":
@@ -88,105 +88,103 @@ if page == "매매일지 작성":
     current_time = datetime.now()
 
     st.info(
-        f"현재 저장 시간: {current_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        f"현재 시간: {current_time.strftime('%Y-%m-%d %H:%M:%S')}"
     )
 
-    date = st.date_input(
-        "날짜",
-        datetime.today(),
-        key="date"
-    )
-
-    stock = st.text_input(
-        "종목명",
-        key="stock"
-    )
-
-    trade_type = st.selectbox(
-        "매매유형",
-        ["스윙", "단타", "중장기"],
-        key="trade_type"
-    )
-
-    buy_reason = st.text_area(
-        "매수 이유",
-        key="buy_reason"
-    )
-
-    sell_reason = st.text_area(
-        "매도 이유",
-        key="sell_reason"
-    )
-
-    profit = st.number_input(
-        "수익률 (%)",
-        step=0.1,
-        key="profit"
-    )
-
-    mistake = st.text_area(
-        "실수",
-        key="mistake"
-    )
-
-    lesson = st.text_area(
-        "배운점",
-        key="lesson"
-    )
+    save_success = False
 
     # ==================================================
-    # 저장 버튼
+    # 입력 Form
     # ==================================================
 
-    if st.button("💾 저장하기"):
+    with st.form("trade_form", clear_on_submit=True):
 
-        new_data = pd.DataFrame([{
-            "저장시간": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "날짜": date,
-            "종목명": stock,
-            "매매유형": trade_type,
-            "매수이유": buy_reason,
-            "매도이유": sell_reason,
-            "수익률": profit,
-            "실수": mistake,
-            "배운점": lesson
-        }])
-
-        try:
-            old_df = pd.read_csv(TRADE_FILE)
-
-        except:
-            old_df = pd.DataFrame(columns=[
-                "저장시간",
-                "날짜",
-                "종목명",
-                "매매유형",
-                "매수이유",
-                "매도이유",
-                "수익률",
-                "실수",
-                "배운점"
-            ])
-
-        updated_df = pd.concat(
-            [old_df, new_data],
-            ignore_index=True
+        date = st.date_input(
+            "날짜",
+            datetime.today()
         )
 
-        updated_df.to_csv(
-            TRADE_FILE,
-            index=False,
-            encoding="utf-8-sig"
+        stock = st.text_input("종목명")
+
+        trade_type = st.selectbox(
+            "매매유형",
+            ["스윙", "단타", "중장기"]
         )
 
-        st.success("저장 완료!")
+        buy_reason = st.text_area("매수 이유")
 
-        # 입력창 초기화
+        sell_reason = st.text_area("매도 이유")
 
-        st.rerun()
+        profit = st.number_input(
+            "수익률 (%)",
+            step=0.1
+        )
+
+        mistake = st.text_area("실수")
+
+        lesson = st.text_area("배운점")
+
+        submitted = st.form_submit_button("💾 저장하기")
+
+        # ==============================================
+        # 저장 처리
+        # ==============================================
+
+        if submitted:
+
+            new_data = pd.DataFrame([{
+                "저장시간": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "날짜": date,
+                "종목명": stock,
+                "매매유형": trade_type,
+                "매수이유": buy_reason,
+                "매도이유": sell_reason,
+                "수익률": profit,
+                "실수": mistake,
+                "배운점": lesson
+            }])
+
+            try:
+                old_df = pd.read_csv(TRADE_FILE)
+
+            except:
+                old_df = pd.DataFrame(columns=[
+                    "저장시간",
+                    "날짜",
+                    "종목명",
+                    "매매유형",
+                    "매수이유",
+                    "매도이유",
+                    "수익률",
+                    "실수",
+                    "배운점"
+                ])
+
+            updated_df = pd.concat(
+                [old_df, new_data],
+                ignore_index=True
+            )
+
+            updated_df.to_csv(
+                TRADE_FILE,
+                index=False,
+                encoding="utf-8-sig"
+            )
+
+            save_success = True
+
+    # ==================================================
+    # 저장 완료 메시지
+    # ==================================================
+
+    if save_success:
+
+        st.success("✅ 저장 완료!")
+
+        st.balloons()
 
 # ======================================================
-# 매매 기록
+# 2. 매매 기록
 # ======================================================
 
 elif page == "매매 기록":
@@ -194,6 +192,7 @@ elif page == "매매 기록":
     st.title("📋 매매 기록")
 
     try:
+
         df = pd.read_csv(TRADE_FILE)
 
         if len(df) > 0:
@@ -262,7 +261,7 @@ elif page == "매매 기록":
                     encoding="utf-8-sig"
                 )
 
-                st.success("수정 완료!")
+                st.success("✅ 수정 완료!")
                 st.rerun()
 
             # ==========================================
@@ -289,7 +288,7 @@ elif page == "매매 기록":
                     encoding="utf-8-sig"
                 )
 
-                st.success("삭제 완료!")
+                st.success("🗑 삭제 완료!")
                 st.rerun()
 
         else:
@@ -299,80 +298,69 @@ elif page == "매매 기록":
         st.warning("저장된 매매기록이 없습니다.")
 
 # ======================================================
-# 관심종목 추가
+# 3. 관심종목 추가
 # ======================================================
 
 elif page == "관심종목 추가":
 
     st.title("⭐ 관심종목 추가")
 
-    watch_stock = st.text_input(
-        "종목명",
-        key="watch_stock"
-    )
+    with st.form("watch_form", clear_on_submit=True):
 
-    reason = st.text_area(
-        "관심 이유",
-        key="reason"
-    )
+        watch_stock = st.text_input("종목명")
 
-    status = st.selectbox(
-        "현재 상태",
-        [
-            "관찰중",
-            "매수대기",
-            "보유중",
-            "매도완료"
-        ],
-        key="status"
-    )
+        reason = st.text_area("관심 이유")
 
-    memo = st.text_area(
-        "메모",
-        key="memo"
-    )
-
-    if st.button("➕ 관심종목 저장"):
-
-        new_watch = pd.DataFrame([{
-            "종목명": watch_stock,
-            "관심이유": reason,
-            "현재상태": status,
-            "메모": memo
-        }])
-
-        try:
-            old_watch = pd.read_csv(WATCHLIST_FILE)
-
-        except:
-            old_watch = pd.DataFrame(columns=[
-                "종목명",
-                "관심이유",
-                "현재상태",
-                "메모"
-            ])
-
-        updated_watch = pd.concat(
-            [old_watch, new_watch],
-            ignore_index=True
+        status = st.selectbox(
+            "현재 상태",
+            [
+                "관찰중",
+                "매수대기",
+                "보유중",
+                "매도완료"
+            ]
         )
 
-        updated_watch.to_csv(
-            WATCHLIST_FILE,
-            index=False,
-            encoding="utf-8-sig"
-        )
+        memo = st.text_area("메모")
 
-        st.success("관심종목 저장 완료!")
+        watch_submit = st.form_submit_button("➕ 관심종목 저장")
 
-        st.session_state.watch_stock = ""
-        st.session_state.reason = ""
-        st.session_state.memo = ""
+        if watch_submit:
 
-        st.rerun()
+            new_watch = pd.DataFrame([{
+                "종목명": watch_stock,
+                "관심이유": reason,
+                "현재상태": status,
+                "메모": memo
+            }])
+
+            try:
+                old_watch = pd.read_csv(WATCHLIST_FILE)
+
+            except:
+                old_watch = pd.DataFrame(columns=[
+                    "종목명",
+                    "관심이유",
+                    "현재상태",
+                    "메모"
+                ])
+
+            updated_watch = pd.concat(
+                [old_watch, new_watch],
+                ignore_index=True
+            )
+
+            updated_watch.to_csv(
+                WATCHLIST_FILE,
+                index=False,
+                encoding="utf-8-sig"
+            )
+
+            st.success("⭐ 관심종목 저장 완료!")
+            st.balloons()
 
 # ======================================================
-# 관심종목 보기
+# 4. 관심종목 보기
 # ======================================================
 
 elif page == "관심종목 보기":
@@ -397,7 +385,7 @@ elif page == "관심종목 보기":
         st.warning("관심종목이 없습니다.")
 
 # ======================================================
-# 통계
+# 5. 통계
 # ======================================================
 
 elif page == "통계":
@@ -424,6 +412,13 @@ elif page == "통계":
                 f"{win_rate:.1f}%"
             )
 
+            total_count = len(df)
+
+            st.metric(
+                "총 매매 횟수",
+                total_count
+            )
+
             st.subheader("📈 최근 매매")
 
             st.dataframe(
@@ -438,7 +433,7 @@ elif page == "통계":
         st.warning("저장된 데이터가 없습니다.")
 
 # ======================================================
-# 매매 캘린더
+# 6. 매매 캘린더
 # ======================================================
 
 elif page == "매매 캘린더":
