@@ -183,13 +183,6 @@ if page == "매매일지 작성":
 
         # 입력창 초기화
 
-        st.session_state.stock = ""
-        st.session_state.buy_reason = ""
-        st.session_state.sell_reason = ""
-        st.session_state.profit = 0.0
-        st.session_state.mistake = ""
-        st.session_state.lesson = ""
-
         st.rerun()
 
 # ======================================================
