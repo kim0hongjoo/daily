@@ -117,7 +117,19 @@ if page == "매매일지 작성":
             "배운점": lesson
         }])
 
-        old_df = pd.read_csv(TRADE_FILE)
+        try:
+            old_df = pd.read_csv(TRADE_FILE)
+        except:
+            old_df = pd.DataFrame(columns=[
+                "날짜",
+                "종목명",
+                "매매유형",
+                "매수이유",
+                "매도이유",
+                "수익률",
+                "실수",
+                "배운점"
+        ])
 
         updated_df = pd.concat(
             [old_df, new_data],
